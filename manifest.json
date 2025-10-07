@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Cookie Manager Pro",
+  "name": "Cooklix",
   "version": "1.0.0",
-  "description": "Advanced cookie management with encryption and cross-site support",
+  "description": "Minimalist cookie manager with encryption and preset management",
   "permissions": [
     "cookies",
     "storage",

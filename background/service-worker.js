@@ -1,5 +1,5 @@
 /**
- * Background Service Worker for Cookie Manager Pro
+ * Background Service Worker for Cooklix
  * Handles all cookie operations and encrypted storage
  */
 
@@ -12,7 +12,7 @@ importScripts('../lib/crypto.js');
  * @param {boolean} secure - Whether to use https
  * @returns {string} Full URL
  */
-function constructUrl(domain, secure = false) {
+function constructUrl(domain, secure = true) {
   const protocol = secure ? 'https://' : 'http://';
   const cleanDomain = domain.startsWith('.') ? domain.substring(1) : domain;
   return protocol + cleanDomain;
@@ -58,7 +58,7 @@ async function setCookie(cookieDetails) {
       throw new Error('Either url or domain must be provided');
     }
 
-    const url = cookieDetails.url || constructUrl(cookieDetails.domain, cookieDetails.secure);
+    const url = cookieDetails.url || constructUrl(cookieDetails.domain, cookieDetails.secure !== false);
     
     const cookieConfig = {
       url,
@@ -73,7 +73,19 @@ async function setCookie(cookieDetails) {
     if (cookieDetails.expirationDate) cookieConfig.expirationDate = cookieDetails.expirationDate;
     if (cookieDetails.sameSite) cookieConfig.sameSite = cookieDetails.sameSite;
 
-    const cookie = await chrome.cookies.set(cookieConfig);
+    let cookie;
+    try {
+      cookie = await chrome.cookies.set(cookieConfig);
+    } catch (err) {
+      if (cookieDetails.secure && !cookieDetails.url) {
+        cookieConfig.url = constructUrl(cookieDetails.domain, false);
+        cookieConfig.secure = false;
+        cookie = await chrome.cookies.set(cookieConfig);
+      } else {
+        throw err;
+      }
+    }
+    
     return { success: true, cookie };
   } catch (error) {
     return { success: false, error: error.message };
@@ -477,8 +489,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
  */
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
-    console.log('Cookie Manager Pro installed');
+    console.log('Cooklix installed');
   } else if (details.reason === 'update') {
-    console.log('Cookie Manager Pro updated to version', chrome.runtime.getManifest().version);
+    console.log('Cooklix updated to version', chrome.runtime.getManifest().version);
   }
 });

@@ -1,117 +1,232 @@
-# Cookie Manager Pro - Chrome Extension
+<div align="center">
 
-## Project Overview
-A fully functional Chrome/Chromium browser extension for advanced cookie management with encryption, preset management, and import/export capabilities.
+# 🍪 Cooklix
 
-## Features Implemented
+<img src="icons/icon128.png" alt="Cooklix Icon" width="128" height="128">
 
-### Core Functionality
-- **Cookie CRUD Operations**
-  - View all cookies for the current domain
-  - Add new cookies manually
-  - Edit existing cookies (all properties)
-  - Delete cookies with confirmation
-  - Search and filter cookies by name/value
-  - Filter by domain
+**Minimalist Cookie Manager with AES-256-GCM Encryption**
 
-- **Cookie Preset System (Account Switcher)**
-  - Save current cookies as named presets
-  - Load/Apply presets to switch between cookie sets
-  - Delete presets
-  - Rename presets
-  - All presets are encrypted with AES-256-GCM
+A Chrome/Chromium extension for advanced cookie management with encryption, preset management, and seamless import/export.
 
-- **Import/Export**
-  - Export cookies as JSON (encrypted or plain text)
-  - Import cookies from JSON (encrypted or plain text)
-  - Supports the provided Perplexity.ai cookie format
-  - Copy to clipboard functionality
-  - Toggle encryption on/off
+[![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-green.svg)](https://chrome.google.com/webstore)
+[![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue.svg)](https://developer.chrome.com/docs/extensions/mv3/intro/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-### Security Features
-- **AES-256-GCM Encryption**
-  - 32-character random encryption key (auto-generated on first run)
-  - All presets stored encrypted
-  - Encryption key stored securely in chrome.storage.local
-  - PBKDF2 key derivation for proper 256-bit security
+</div>
 
-### UI/UX
-- **Modern Glassmorphic Design**
-  - Purple/blue gradient background
-  - Frosted glass effect cards
-  - Smooth animations and transitions
-  - 400px × 600px popup dimensions
+---
 
-- **First-Run Welcome Screen**
-  - Automatic encryption key generation
-  - Feature overview
-  - One-time welcome experience
+## ✨ Features
 
-## Project Structure
+| Feature | Description |
+|---------|-------------|
+| 🔐 **AES-256-GCM Encryption** | Auto-generated master key, PBKDF2 derivation, secure local storage |
+| 🔄 **Preset System** | Save/load cookie sets for quick account switching |
+| 📦 **Import/Export** | JSON format with optional encryption |
+| 🎨 **Dark Theme** | Clean, minimalistic interface optimized for productivity |
+| ⚡ **Zero Dependencies** | Pure JavaScript, no external libraries |
 
+---
+
+## 🚀 Quick Start
+
+### Installation
+```bash
+1. Navigate to chrome://extensions/
+2. Enable "Developer mode" (top-right toggle)
+3. Click "Load unpacked" → Select this directory
+4. Done! Click the Cooklix icon to begin
 ```
-.
-├── manifest.json                 # Extension manifest (Manifest V3)
+
+### First Use
+On first launch, Cooklix automatically:
+- Generates a 32-character encryption key
+- Initializes secure storage
+- Displays welcome screen with feature overview
+
+---
+
+## 🏗️ Architecture
+
+### Extension Structure
+```
+Cooklix/
+├── manifest.json              # Manifest V3 configuration
 ├── background/
-│   └── service-worker.js        # Background service worker
+│   └── service-worker.js     # Cookie operations & encryption
 ├── popup/
-│   ├── popup.html               # Popup UI structure
-│   └── popup.js                 # Popup logic and event handlers
+│   ├── popup.html            # UI structure
+│   └── popup.js              # Event handlers & state
 ├── lib/
-│   └── crypto.js                # Encryption utilities (AES-256-GCM)
+│   └── crypto.js             # AES-256-GCM encryption
 ├── styles/
-│   └── popup.css                # Modern glassmorphic styling
-└── icons/
-    ├── icon16.png               # 16x16 icon
-    ├── icon48.png               # 48x48 icon
-    └── icon128.png              # 128x128 icon
+│   └── popup.css             # Dark theme styling
+└── icons/                    # Extension icons (16/48/128)
 ```
 
-## Technical Stack
-- **Chrome Extension API** (Manifest V3)
-- **Web Crypto API** for encryption
-- **Vanilla JavaScript** (no external dependencies)
-- **Modern CSS** with glassmorphic design
+---
 
-## How to Load and Test the Extension
+## 📊 System Flowcharts
 
-### 1. Load in Chrome
-1. Open Chrome and navigate to `chrome://extensions/`
-2. Enable "Developer mode" (toggle in top-right corner)
-3. Click "Load unpacked"
-4. Select this project directory
-5. The extension should now appear in your extensions list
+### Encryption System Architecture
 
-### 2. Use the Extension
-1. Click the Cookie Manager Pro icon in the Chrome toolbar
-2. The welcome screen will appear on first run (encryption key auto-generated)
-3. Click "Get Started" to begin using the extension
-4. The popup will show cookies for the current tab's domain
+```mermaid
+flowchart TD
+    A[First Run] --> B{Master Key Exists?}
+    B -->|No| C[Generate 32-char Key]
+    B -->|Yes| D[Load Key from Storage]
+    C --> E[Derive PBKDF2 Key]
+    D --> E
+    E --> F[Initialize WebCrypto]
+    F --> G[Ready for Operations]
+    
+    G --> H[Encrypt Preset]
+    G --> I[Decrypt Preset]
+    
+    H --> J[PBKDF2 Derivation]
+    J --> K[AES-256-GCM Encrypt]
+    K --> L[Store Encrypted Data]
+    
+    I --> M[Retrieve Encrypted Data]
+    M --> N[PBKDF2 Derivation]
+    N --> O[AES-256-GCM Decrypt]
+    O --> P[Return Plain Data]
+```
 
-### 3. Test Features
+### Cookie Preset Management Flow
 
-**Cookie Management:**
-- Add a new cookie using the "Add Cookie" button
-- Edit an existing cookie by clicking the edit icon
-- Delete a cookie by clicking the trash icon
-- Search cookies using the search bar
-- Filter by domain using the dropdown
+```mermaid
+flowchart LR
+    A[User Action] --> B{Operation Type}
+    
+    B -->|Save| C[Get Current Cookies]
+    C --> D[Encrypt Cookie Data]
+    D --> E[Store as Preset]
+    E --> F[Update UI]
+    
+    B -->|Load| G[Select Preset]
+    G --> H[Decrypt Preset Data]
+    H --> I[Apply Cookies to Domain]
+    I --> J{Protocol Check}
+    J -->|HTTPS| K[Try HTTPS First]
+    J -->|HTTP Fallback| L[Try HTTP]
+    K --> M[Cookie Applied]
+    L --> M
+    M --> F
+    
+    B -->|Delete| N[Confirm Action]
+    N --> O[Remove Preset]
+    O --> F
+    
+    B -->|Rename| P[Validate New Name]
+    P --> Q[Update Preset Key]
+    Q --> F
+```
 
-**Preset System:**
-- Click "Preset Manager" to expand the section
-- Click "Save Current" to save current cookies as a preset
-- Select a preset from the dropdown and click "Load" to apply it
-- Use "Delete" or "Rename" to manage presets
+### Cookie CRUD Operations
 
-**Import/Export:**
-- Click "Export" to export current cookies
-- Toggle "Encrypt with master key" to encrypt the export
-- Copy the JSON to clipboard
-- Click "Import" to paste and import cookies
-- Toggle "Data is encrypted" if importing encrypted data
+```mermaid
+flowchart TD
+    A[User Interaction] --> B{Action}
+    
+    B -->|Create| C[Open Cookie Form]
+    C --> D[Validate Input]
+    D --> E[Construct URL]
+    E --> F{Protocol}
+    F -->|HTTPS| G[Set Secure Cookie]
+    F -->|HTTP| H[Set Non-Secure Cookie]
+    G --> I[Refresh Cookie List]
+    H --> I
+    
+    B -->|Read| J[Fetch Cookies for Domain]
+    J --> K[Apply Filters]
+    K --> L[Render Cookie List]
+    
+    B -->|Update| M[Load Cookie Data]
+    M --> N[Edit in Form]
+    N --> D
+    
+    B -->|Delete| O[Confirm Deletion]
+    O --> P{Cookie Secure?}
+    P -->|Yes| Q[Delete via HTTPS URL]
+    P -->|No| R[Try HTTPS → HTTP Fallback]
+    Q --> I
+    R --> I
+```
 
-## Sample Cookie Import Format
-The extension supports the standard Chrome cookie format (like the Perplexity.ai sample provided):
+### Import/Export Process
+
+```mermaid
+flowchart LR
+    A[User Action] --> B{Direction}
+    
+    B -->|Export| C[Fetch Domain Cookies]
+    C --> D{Encrypt?}
+    D -->|Yes| E[Encrypt with Master Key]
+    D -->|No| F[Format as JSON]
+    E --> G[Output Encrypted String]
+    F --> G
+    G --> H[Copy to Clipboard]
+    
+    B -->|Import| I[Paste JSON Data]
+    I --> J{Encrypted?}
+    J -->|Yes| K[Decrypt with Master Key]
+    J -->|No| L[Parse JSON]
+    K --> M[Validate Cookie Format]
+    L --> M
+    M --> N[Apply Each Cookie]
+    N --> O[Show Success Count]
+```
+
+---
+
+## 🔒 Security Model
+
+### Encryption Pipeline
+1. **Key Generation**: Cryptographically secure 32-character key on first run
+2. **Key Derivation**: PBKDF2 with 100,000 iterations
+3. **Encryption**: AES-256-GCM with random IV per operation
+4. **Storage**: Master key in Chrome's encrypted `storage.local`
+
+### Race Condition Prevention
+- **Operation Lock**: Global mutex prevents concurrent preset operations
+- **Atomic Operations**: Each cookie operation completes before next begins
+- **State Validation**: Checks operation lock before critical sections
+
+### URL Protocol Handling
+```javascript
+// HTTPS-first approach with HTTP fallback
+1. Attempt HTTPS URL construction
+2. If fails AND cookie is non-secure → Retry with HTTP
+3. Report detailed error on failure
+```
+
+---
+
+## 🎯 Use Cases
+
+| Scenario | Solution |
+|----------|----------|
+| **Multi-Account Management** | Save cookies for each account as presets, switch instantly |
+| **Development Testing** | Export production cookies, import to local environment |
+| **Session Backup** | Encrypt and export critical session cookies |
+| **Cross-Browser Sync** | Export from one browser, import to another |
+
+---
+
+## 🛠️ Technical Stack
+
+- **Platform**: Chrome Extension (Manifest V3)
+- **Language**: Vanilla JavaScript (ES6+)
+- **Crypto**: Web Crypto API (AES-256-GCM, PBKDF2)
+- **Storage**: Chrome Storage API
+- **UI**: Custom CSS (Dark Theme)
+
+---
+
+## 📝 Cookie Format
+
+Cooklix supports standard Chrome cookie format:
 
 ```json
 [
@@ -120,33 +235,54 @@ The extension supports the standard Chrome cookie format (like the Perplexity.ai
     "expirationDate": 1234567890,
     "hostOnly": false,
     "httpOnly": false,
-    "name": "cookie_name",
+    "name": "session_id",
     "path": "/",
     "sameSite": "lax",
     "secure": true,
     "session": false,
-    "value": "cookie_value"
+    "value": "abc123xyz"
   }
 ]
 ```
 
-## Security Notes
-- All cookie presets are encrypted using AES-256-GCM
-- Encryption key is 32 characters, randomly generated on first run
-- Key is stored securely in Chrome's encrypted storage
-- Import/Export encryption uses the same master key
-- No data is sent to external servers - everything is local
+---
 
-## Recent Changes
-- 2025-01-07: Initial implementation complete
-  - All core features implemented
-  - Modern UI with glassmorphic design
-  - Full encryption system
-  - Preset management
-  - Import/Export functionality
-  - First-run welcome screen
+## 🧪 Testing Checklist
 
-## Development Status
-✅ Code reviewed by architect AI
-✅ No LSP errors
-✅ Ready for use
+- [ ] Load extension in `chrome://extensions/`
+- [ ] Verify welcome screen on first run
+- [ ] Test cookie CRUD operations
+- [ ] Save preset with multiple cookies
+- [ ] Load preset to different domain
+- [ ] Export cookies (encrypted & plain)
+- [ ] Import cookies from JSON
+- [ ] Verify operation locking (rapid clicks)
+- [ ] Test HTTPS/HTTP protocol fallback
+
+---
+
+## 🔄 Recent Updates
+
+**2025-10-07** - Cooklix Rebrand & Enhancements
+- ✅ Rebranded from "Cookie Manager Pro" to "Cooklix"
+- ✅ Implemented minimalistic dark theme UI
+- ✅ Fixed preset manager race conditions with operation locking
+- ✅ Improved URL construction with HTTPS-first approach
+- ✅ Enhanced error handling and user feedback
+- ✅ Added comprehensive flowchart documentation
+
+---
+
+## 📄 License
+
+MIT License - See [LICENSE](LICENSE) file for details
+
+---
+
+<div align="center">
+
+**Built with ❤️ for Cookie Management**
+
+[Report Bug](https://github.com/yourusername/cooklix/issues) · [Request Feature](https://github.com/yourusername/cooklix/issues)
+
+</div>

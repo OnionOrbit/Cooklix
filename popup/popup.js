@@ -1,5 +1,5 @@
 /**
- * Cookie Manager Pro - Popup Script
+ * Cooklix - Popup Script
  * Handles all UI interactions and communication with background service worker
  */
 
@@ -9,6 +9,7 @@ let allCookies = [];
 let filteredCookies = [];
 let currentEditCookie = null;
 let confirmCallback = null;
+let operationLock = false;
 
 // DOM Elements (initialized on load)
 const elements = {};
@@ -430,12 +431,28 @@ async function handleDeleteCookie(cookie) {
     'Delete Cookie',
     `Are you sure you want to delete "${cookie.name}"?`,
     async () => {
+      if (operationLock) {
+        showToast('Please wait for current operation to complete', 'error');
+        return;
+      }
+      
       try {
+        operationLock = true;
         showLoading();
-        const url = `http${cookie.secure ? 's' : ''}://${cookie.domain.startsWith('.') ? cookie.domain.substring(1) : cookie.domain}`;
-        const response = await sendMessage('deleteCookie', {
+        
+        const cleanDomain = cookie.domain.startsWith('.') ? cookie.domain.substring(1) : cookie.domain;
+        let url = `https://${cleanDomain}`;
+        
+        let response = await sendMessage('deleteCookie', {
           cookieDetails: { url, name: cookie.name }
         });
+        
+        if (!response.success && !cookie.secure) {
+          url = `http://${cleanDomain}`;
+          response = await sendMessage('deleteCookie', {
+            cookieDetails: { url, name: cookie.name }
+          });
+        }
         
         if (response.success) {
           showToast('Cookie deleted successfully');
@@ -446,6 +463,7 @@ async function handleDeleteCookie(cookie) {
       } catch (error) {
         showToast('Failed to delete cookie: ' + error.message, 'error');
       } finally {
+        operationLock = false;
         hideLoading();
       }
     }
@@ -477,6 +495,11 @@ async function loadPresets() {
 }
 
 async function saveCurrentAsPreset() {
+  if (operationLock) {
+    showToast('Please wait for current operation to complete', 'error');
+    return;
+  }
+  
   const presetName = document.getElementById('presetName').value.trim();
   
   if (!presetName) {
@@ -485,6 +508,7 @@ async function saveCurrentAsPreset() {
   }
   
   try {
+    operationLock = true;
     showLoading();
     const cookiesResponse = await sendMessage('getCookies', { domain: currentDomain });
     
@@ -493,6 +517,10 @@ async function saveCurrentAsPreset() {
     }
     
     const cookies = cookiesResponse.cookies;
+    if (cookies.length === 0) {
+      throw new Error('No cookies to save for this domain');
+    }
+    
     const response = await sendMessage('savePreset', { presetName, cookies });
     
     if (response.success) {
@@ -506,6 +534,7 @@ async function saveCurrentAsPreset() {
   } catch (error) {
     showToast('Failed to save preset: ' + error.message, 'error');
   } finally {
+    operationLock = false;
     hideLoading();
   }
 }
@@ -522,12 +551,21 @@ async function applySelectedPreset() {
     'Load Preset',
     `Load preset "${presetName}" to ${currentDomain}? This will add cookies from the preset.`,
     async () => {
+      if (operationLock) {
+        showToast('Please wait for current operation to complete', 'error');
+        return;
+      }
+      
       try {
+        operationLock = true;
         showLoading();
         const response = await sendMessage('applyPreset', { presetName, domain: currentDomain });
         
         if (response.success) {
-          showToast(`Preset loaded: ${response.applied} cookies applied`);
+          const message = response.applied > 0 
+            ? `Preset loaded: ${response.applied} cookie${response.applied > 1 ? 's' : ''} applied`
+            : 'Preset loaded but no cookies were applied';
+          showToast(message);
           await loadCookies();
         } else {
           throw new Error(response.error);
@@ -535,6 +573,7 @@ async function applySelectedPreset() {
       } catch (error) {
         showToast('Failed to load preset: ' + error.message, 'error');
       } finally {
+        operationLock = false;
         hideLoading();
       }
     }
@@ -553,19 +592,27 @@ async function deleteSelectedPreset() {
     'Delete Preset',
     `Are you sure you want to delete preset "${presetName}"?`,
     async () => {
+      if (operationLock) {
+        showToast('Please wait for current operation to complete', 'error');
+        return;
+      }
+      
       try {
+        operationLock = true;
         showLoading();
         const response = await sendMessage('deletePreset', { presetName });
         
         if (response.success) {
           showToast('Preset deleted successfully');
           await loadPresets();
+          elements.presetSelect.value = '';
         } else {
           throw new Error(response.error);
         }
       } catch (error) {
         showToast('Failed to delete preset: ' + error.message, 'error');
       } finally {
+        operationLock = false;
         hideLoading();
       }
     }
@@ -585,6 +632,11 @@ async function renameSelectedPreset() {
 }
 
 async function confirmRenamePreset() {
+  if (operationLock) {
+    showToast('Please wait for current operation to complete', 'error');
+    return;
+  }
+  
   const oldName = elements.presetSelect.value;
   const newName = document.getElementById('presetNewName').value.trim();
   
@@ -599,6 +651,7 @@ async function confirmRenamePreset() {
   }
   
   try {
+    operationLock = true;
     showLoading();
     const response = await sendMessage('renamePreset', { oldName, newName });
     
@@ -613,6 +666,7 @@ async function confirmRenamePreset() {
   } catch (error) {
     showToast('Failed to rename preset: ' + error.message, 'error');
   } finally {
+    operationLock = false;
     hideLoading();
   }
 }
