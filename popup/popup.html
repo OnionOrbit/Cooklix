@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Manager Pro</title>
+    <link rel="stylesheet" href="../styles/popup.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-top">
+                <div class="logo-section">
+                    <div class="logo-icon">🍪</div>
+                    <div class="header-info">
+                        <h1 class="title">Cookie Manager Pro</h1>
+                        <div class="current-domain" id="currentDomain">Loading...</div>
+                    </div>
+                </div>
+                <button class="settings-btn" id="settingsBtn" aria-label="Settings">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M10 12.5C11.3807 12.5 12.5 11.3807 12.5 10C12.5 8.61929 11.3807 7.5 10 7.5C8.61929 7.5 7.5 8.61929 7.5 10C7.5 11.3807 8.61929 12.5 10 12.5Z" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M16.6667 10C16.6667 10.4583 16.625 10.9083 16.55 11.3417L18.3333 12.6667L16.6667 15.8333L14.5833 15C13.9917 15.5 13.3083 15.8917 12.5667 16.1583L12.0833 18.3333H8.75L8.26667 16.1583C7.525 15.8917 6.84167 15.5 6.25 15L4.16667 15.8333L2.5 12.6667L4.28333 11.3417C4.20833 10.9083 4.16667 10.4583 4.16667 10C4.16667 9.54167 4.20833 9.09167 4.28333 8.65833L2.5 7.33333L4.16667 4.16667L6.25 5C6.84167 4.5 7.525 4.10833 8.26667 3.84167L8.75 1.66667H12.0833L12.5667 3.84167C13.3083 4.10833 13.9917 4.5 14.5833 5L16.6667 4.16667L18.3333 7.33333L16.55 8.65833C16.625 9.09167 16.6667 9.54167 16.6667 10Z" stroke="currentColor" stroke-width="1.5"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <section class="search-section glass-card">
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="🔍 Search cookies..."
+                    aria-label="Search cookies"
+                >
+            </div>
+            <div class="filter-container">
+                <select id="domainFilter" class="domain-filter" aria-label="Filter by domain">
+                    <option value="all">All Domains</option>
+                </select>
+            </div>
+        </section>
+
+        <section class="cookie-list-section">
+            <div class="cookie-list" id="cookieList">
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-icon">🍪</div>
+                    <p>No cookies found</p>
+                    <small>Add a cookie to get started</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="actions-section glass-card">
+            <button class="action-btn primary" id="addCookieBtn">
+                <span class="btn-icon">➕</span>
+                Add Cookie
+            </button>
+            <button class="action-btn" id="importBtn">
+                <span class="btn-icon">📥</span>
+                Import
+            </button>
+            <button class="action-btn" id="exportBtn">
+                <span class="btn-icon">📤</span>
+                Export
+            </button>
+        </section>
+
+        <section class="preset-section glass-card collapsible">
+            <div class="preset-header" id="presetHeader">
+                <h3>Preset Manager</h3>
+                <span class="collapse-icon">▼</span>
+            </div>
+            <div class="preset-content" id="presetContent">
+                <div class="preset-selector">
+                    <select id="presetSelect" class="preset-dropdown" aria-label="Select preset">
+                        <option value="">Select a preset...</option>
+                    </select>
+                </div>
+                <div class="preset-actions">
+                    <button class="preset-btn" id="savePresetBtn">
+                        <span class="btn-icon">💾</span>
+                        Save Current
+                    </button>
+                    <button class="preset-btn" id="loadPresetBtn">
+                        <span class="btn-icon">📂</span>
+                        Load
+                    </button>
+                    <button class="preset-btn" id="deletePresetBtn">
+                        <span class="btn-icon">🗑️</span>
+                        Delete
+                    </button>
+                    <button class="preset-btn" id="renamePresetBtn">
+                        <span class="btn-icon">✏️</span>
+                        Rename
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="modal-overlay" id="cookieModal">
+        <div class="modal glass-modal">
+            <div class="modal-header">
+                <h2 id="cookieModalTitle">Add Cookie</h2>
+                <button class="close-btn" id="closeCookieModal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="cookieForm">
+                    <div class="form-group">
+                        <label for="cookieName">Name *</label>
+                        <input type="text" id="cookieName" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cookieValue">Value *</label>
+                        <input type="text" id="cookieValue" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cookieDomain">Domain *</label>
+                        <input type="text" id="cookieDomain" class="form-input" placeholder=".example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cookiePath">Path</label>
+                        <input type="text" id="cookiePath" class="form-input" value="/">
+                    </div>
+                    <div class="form-group">
+                        <label for="cookieExpires">Expires</label>
+                        <input type="datetime-local" id="cookieExpires" class="form-input">
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <input type="checkbox" id="cookieSecure">
+                            <span>Secure (HTTPS only)</span>
+                        </label>
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <input type="checkbox" id="cookieHttpOnly">
+                            <span>HttpOnly</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="cookieSameSite">SameSite</label>
+                        <select id="cookieSameSite" class="form-input">
+                            <option value="no_restriction">No restriction</option>
+                            <option value="lax">Lax</option>
+                            <option value="strict">Strict</option>
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" id="cancelCookieBtn">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Cookie</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="importModal">
+        <div class="modal glass-modal">
+            <div class="modal-header">
+                <h2>Import Cookies</h2>
+                <button class="close-btn" id="closeImportModal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="importData">Paste cookie data (JSON format)</label>
+                    <textarea id="importData" class="form-textarea" rows="8" placeholder='[{"name": "...", "value": "...", ...}]'></textarea>
+                </div>
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="importEncrypted">
+                        <span>🔒 Data is encrypted (uses master key)</span>
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary" id="cancelImportBtn">Cancel</button>
+                    <button class="btn-primary" id="confirmImportBtn">Import</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="exportModal">
+        <div class="modal glass-modal">
+            <div class="modal-header">
+                <h2>Export Cookies</h2>
+                <button class="close-btn" id="closeExportModal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="exportData">Cookie Data</label>
+                    <textarea id="exportData" class="form-textarea" rows="8" readonly></textarea>
+                </div>
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="exportEncrypted">
+                        <span>🔒 Encrypt with master key</span>
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary" id="closeExportBtn">Close</button>
+                    <button class="btn-primary" id="copyExportBtn">📋 Copy to Clipboard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="presetSaveModal">
+        <div class="modal glass-modal small-modal">
+            <div class="modal-header">
+                <h2>Save Preset</h2>
+                <button class="close-btn" id="closePresetSaveModal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="presetName">Preset Name *</label>
+                    <input type="text" id="presetName" class="form-input" placeholder="My Cookie Set" required>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary" id="cancelPresetSaveBtn">Cancel</button>
+                    <button class="btn-primary" id="confirmPresetSaveBtn">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="presetRenameModal">
+        <div class="modal glass-modal small-modal">
+            <div class="modal-header">
+                <h2>Rename Preset</h2>
+                <button class="close-btn" id="closePresetRenameModal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="presetNewName">New Name *</label>
+                    <input type="text" id="presetNewName" class="form-input" required>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary" id="cancelPresetRenameBtn">Cancel</button>
+                    <button class="btn-primary" id="confirmPresetRenameBtn">Rename</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal glass-modal small-modal">
+            <div class="modal-header">
+                <h2 id="confirmTitle">Confirm Action</h2>
+                <button class="close-btn" id="closeConfirmModal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Are you sure you want to proceed?</p>
+                <div class="modal-actions">
+                    <button class="btn-secondary" id="cancelConfirmBtn">Cancel</button>
+                    <button class="btn-danger" id="confirmActionBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="welcomeModal">
+        <div class="modal glass-modal welcome-modal">
+            <div class="modal-header">
+                <h2>Welcome to Cookie Manager Pro</h2>
+            </div>
+            <div class="modal-body">
+                <div class="welcome-icon">🍪</div>
+                <p class="welcome-description">Your powerful cookie management tool is ready!</p>
+                
+                <div class="welcome-features">
+                    <div class="feature-item">
+                        <span class="feature-icon">🌐</span>
+                        <span class="feature-text">Manage cookies across all websites</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🔄</span>
+                        <span class="feature-text">Save and switch between cookie presets (account switcher)</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📦</span>
+                        <span class="feature-text">Import/Export cookies with encryption</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🔐</span>
+                        <span class="feature-text">All data encrypted with AES-256-GCM</span>
+                    </div>
+                </div>
+                
+                <div class="encryption-status" id="encryptionStatus">
+                    <div class="encryption-loading">
+                        <div class="mini-spinner"></div>
+                        <span>Setting up encryption...</span>
+                    </div>
+                </div>
+                
+                <div class="welcome-actions">
+                    <button class="btn-primary btn-get-started" id="getStartedBtn" disabled>
+                        Get Started
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <script src="../lib/crypto.js"></script>
+    <script src="popup.js"></script>
+</body>
+</html>
